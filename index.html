@@ -392,6 +392,37 @@
           return;
         }
 
+        // Check if player has fallen too far below the lowest platform (game over condition)
+        const fallThreshold = 800; // Distance below the lowest platform before game over
+        let lowestPlatformY = startingY; // Start with the initial ground level
+        
+        // Find the lowest platform currently in the game
+        platforms.children.entries.forEach((platform) => {
+          if (platform.active && platform.y > lowestPlatformY) {
+            lowestPlatformY = platform.y;
+          }
+        });
+        
+        movingPlatforms.children.entries.forEach((platform) => {
+          if (platform.active && platform.y > lowestPlatformY) {
+            lowestPlatformY = platform.y;
+          }
+        });
+
+        // If player has fallen too far below the lowest platform, trigger game over
+        if (player.y > lowestPlatformY + fallThreshold && !gameOver) {
+          this.physics.pause();
+          player.setTint(0xff0000);
+          player.anims.play("death");
+          gameOver = true;
+
+          // Wait for death animation to complete before showing game over screen
+          setTimeout(() => {
+            showGameOverScreen();
+          }, 1000); // 1 second delay to let animation play
+          return;
+        }
+
         // Movement
         if (cursors.left.isDown) {
           player.setVelocityX(-300);
