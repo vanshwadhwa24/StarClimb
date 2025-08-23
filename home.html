@@ -1,0 +1,81 @@
+`<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Endless Platformer - Home</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="hero">
+        <h1 class="game-title">Endless Platformer</h1>
+        <p class="game-subtitle">
+          Jump, collect, and survive in this thrilling endless adventure!
+        </p>
+      </header>
+
+      <main class="content">
+        <section class="game-info">
+          <div class="info-card">
+            <h2>How to Play</h2>
+            <ul class="controls-list">
+              <li><strong>Arrow Keys:</strong> Move left and right</li>
+              <li><strong>Up Arrow:</strong> Jump</li>
+              <li><strong>Goal:</strong> Collect stars and avoid bombs</li>
+              <li>
+                <strong>Time Limit:</strong> 60 seconds to score as high as
+                possible
+              </li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <h2>Features</h2>
+            <ul class="features-list">
+              <li>Endless vertical platforming</li>
+              <li>Moving platforms for extra challenge</li>
+              <li>Dynamic bomb AI that patrols platforms</li>
+              <li>Smooth animations and physics</li>
+              <li>Height tracking system</li>
+            </ul>
+          </div>
+        </section>
+
+        <div class="play-section">
+          <button class="play-button" onclick="startGame()">
+            <span class="play-icon">▶</span>
+            Start Game
+          </button>
+          <p class="tip">
+            Tip: Collect stars to increase your score, but watch out for the
+            bombs!
+          </p>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <p>Built with Phaser 3 | Endless Platformer Game</p>
+      </footer>
+    </div>
+
+    <script>
+      function startGame() {
+        window.location.href = "index.html";
+      }
+
+      // Add some interactive effects
+      document.addEventListener("DOMContentLoaded", function () {
+        const playButton = document.querySelector(".play-button");
+
+        playButton.addEventListener("mouseenter", function () {
+          this.style.transform = "scale(1.05)";
+        });
+
+        playButton.addEventListener("mouseleave", function () {
+          this.style.transform = "scale(1)";
+        });
+      });
+    </script>
+  </body>
+</html>

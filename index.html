@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Endless Platformer with Moving Platforms</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+      }
+      canvas {
+        display: block;
+        width: 100vw !important;
+        height: 100vh !important;
+      }
+
+      /* Retro Game Over Overlay */
+      .game-over-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        font-family: "Press Start 2P", monospace;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.5s ease-in-out;
+      }
+
+      .game-over-overlay.show {
+        background: rgba(0, 0, 0, 0.8);
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .game-over-content {
+        text-align: center;
+        color: #ff0000;
+        animation: retro-glow 1s ease-in-out infinite alternate;
+        transform: scale(0.8);
+        transition: transform 0.5s ease-out;
+      }
+
+      .game-over-overlay.show .game-over-content {
+        transform: scale(1);
+      }
+
+      .game-over-title {
+        font-size: 48px;
+        margin-bottom: 30px;
+        text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000;
+      }
+
+      .game-over-stats {
+        font-size: 16px;
+        color: #ffffff;
+        margin-bottom: 40px;
+        line-height: 2;
+      }
+
+      .retry-button {
+        background: linear-gradient(45deg, #ff0000, #cc0000);
+        border: 3px solid #ffffff;
+        color: #ffffff;
+        font-family: "Press Start 2P", monospace;
+        font-size: 16px;
+        padding: 15px 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+      }
+
+      .retry-button:hover {
+        background: linear-gradient(45deg, #cc0000, #990000);
+        box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+        transform: scale(1.05);
+      }
+
+      .button-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .home-button {
+        background: linear-gradient(45deg, #0066cc, #004499);
+        border: 3px solid #ffffff;
+        color: #ffffff;
+        font-family: "Press Start 2P", monospace;
+        font-size: 16px;
+        padding: 15px 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        box-shadow: 0 0 20px rgba(0, 102, 204, 0.5);
+      }
+
+      .home-button:hover {
+        background: linear-gradient(45deg, #004499, #003366);
+        box-shadow: 0 0 30px rgba(0, 102, 204, 0.8);
+        transform: scale(1.05);
+      }
+
+      @keyframes retro-glow {
+        from {
+          text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000;
+        }
+        to {
+          text-shadow: 0 0 20px #ff0000, 0 0 30px #ff0000, 0 0 40px #ff0000;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .game-over-title {
+          font-size: 24px;
+        }
+        .game-over-stats {
+          font-size: 12px;
+        }
+        .retry-button,
+        .home-button {
+          font-size: 12px;
+          padding: 12px 24px;
+        }
+
+        .button-container {
+          gap: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Retro Game Over Overlay -->
+    <div id="gameOverOverlay" class="game-over-overlay">
+      <div class="game-over-content">
+        <div class="game-over-title">GAME OVER</div>
+        <div class="game-over-stats">
+          <div>FINAL SCORE: <span id="finalScore">0</span></div>
+          <div>MAX HEIGHT: <span id="finalHeight">0</span></div>
+        </div>
+        <div class="button-container">
+          <button class="retry-button" onclick="restartGame()">
+            PLAY AGAIN
+          </button>
+          <button class="home-button" onclick="goHome()">HOME</button>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var player;
+      var stars;
+      var bombs;
+      var platforms;
+      var movingPlatforms; // MOVING PLATFORM CODE
+      var cursors;
+      var score = 0;
+      var gameOver = false;
+      var heightText;
+      var scoreText;
+      var timerText;
+      var timeLeft = 60;
+      var gameStartTime;
+      var highestY = 0;
+      var startingY = 0;
+      var lastPlatformY = 0;
+      var lastPlatformX = 0;
+
+      var config = {
+        type: Phaser.AUTO,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 300 },
+            debug: false,
+          },
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      var game = new Phaser.Game(config);
+
+      function preload() {
+        this.load.image("sky", "assets/bg2.png");
+        this.load.image("ground", "assets/platform.png");
+        this.load.image("base" , "assets/platform2.png")
+        this.load.image("star", "assets/star.png");
+        this.load.image("bomb", "assets/bomb.png");
+        this.load.spritesheet("dude", "assets/PM_Run.png", {
+          frameWidth: 32,
+          frameHeight: 32,
+        });
+        this.load.spritesheet("idle", "assets/PM_Idle.png", {
+          frameWidth: 32,
+          frameHeight: 32,
+        });
+        this.load.spritesheet("jump", "assets/PM_Jump.png", {
+          frameWidth: 32,
+          frameHeight: 32,
+        });
+        this.load.spritesheet("death", "assets/PM_Death.png", {
+          frameWidth: 32,
+          frameHeight: 32,
+        });
+      }
+
+      function create() {
+        // Set world bounds for endless scrolling
+        this.physics.world.setBounds(0, -10000, this.cameras.main.width, 20000);
+
+        // Background
+        this.bg = this.add.image(0, 0, "sky");
+        this.bg.setOrigin(0, 0);
+        this.bg.setDisplaySize(
+          this.cameras.main.width,
+          this.cameras.main.height
+        );
+        this.bg.setScrollFactor(0);
+
+        // Platforms
+        platforms = this.physics.add.staticGroup();
+        movingPlatforms = this.physics.add.group(); // MOVING PLATFORM CODE
+
+        // Initial ground platform (static!)
+        var startPlatform = platforms.create(
+          this.cameras.main.width / 2,
+          this.cameras.main.height - 50,
+          "base"
+        );
+        startPlatform.setScale(this.cameras.main.width / 400, 1).refreshBody();
+
+        lastPlatformY = this.cameras.main.height - 50;
+        lastPlatformX = this.cameras.main.width / 2;
+
+        // Player
+        player = this.physics.add.sprite(
+          this.cameras.main.width / 2,
+          this.cameras.main.height - 100,
+          "dude"
+        );
+
+        player.setScale(1.5);
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        // Initialize starting position and highestY correctly
+        startingY = player.y;
+        highestY = player.y;
+
+        // Camera follow
+        this.cameras.main.startFollow(player);
+        this.cameras.main.setDeadzone(
+          this.cameras.main.width * 0.3,
+          this.cameras.main.height * 0.3
+        );
+
+        // Animations
+        this.anims.create({
+          key: "left",
+          frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 5 }),
+          frameRate: 10,
+          repeat: -1,
+        });
+
+        this.anims.create({
+          key: "turn",
+          frames: [{ key: "dude", frame: 0 }],
+          frameRate: 20,
+        });
+
+        this.anims.create({
+          key: "idle",
+          frames: this.anims.generateFrameNumbers("idle", { start: 0, end: 3 }),
+          frameRate: 10,
+          repeat: -1,
+        });
+
+        this.anims.create({
+          key: "right",
+          frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 5 }),
+          frameRate: 10,
+          repeat: -1,
+        });
+
+        this.anims.create({
+          key: "jump",
+          frames: this.anims.generateFrameNumbers("jump", { start: 0, end: 7 }),
+          frameRate: 15,
+          repeat: 0,
+        });
+
+        this.anims.create({
+          key: "death",
+          frames: this.anims.generateFrameNumbers("death", {
+            start: 0,
+            end: 7,
+          }),
+          frameRate: 15,
+          repeat: 0,
+        });
+
+        // Input
+        cursors = this.input.keyboard.createCursorKeys();
+
+        // Stars & bombs
+        stars = this.physics.add.group();
+        bombs = this.physics.add.group();
+
+        // Score/height text
+        scoreText = this.add.text(16, 16, "Score: 0", {
+          fontSize: "28px",
+          fill: "#000",
+        });
+        scoreText.setScrollFactor(0);
+
+        heightText = this.add.text(16, 50, "Height: 0", {
+          fontSize: "28px",
+          fill: "#000",
+        });
+        heightText.setScrollFactor(0);
+
+        timerText = this.add.text(
+          this.cameras.main.width - 16,
+          16,
+          "Time: 60",
+          {
+            fontSize: "28px",
+            fill: "#000",
+          }
+        );
+        timerText.setOrigin(1, 0);
+        timerText.setScrollFactor(0);
+
+        // Initialize game start time
+        gameStartTime = this.time.now;
+
+        // Colliders
+        this.physics.add.collider(player, platforms);
+        this.physics.add.collider(player, movingPlatforms); // MOVING PLATFORM CODE
+        this.physics.add.collider(stars, platforms);
+        this.physics.add.collider(stars, movingPlatforms); // MOVING PLATFORM CODE
+        this.physics.add.collider(bombs, platforms);
+        this.physics.add.collider(bombs, movingPlatforms); // MOVING PLATFORM CODE
+
+        this.physics.add.overlap(player, stars, collectStar, null, this);
+        this.physics.add.collider(player, bombs, hitBomb, null, this);
+
+        // Generate initial platforms with guaranteed star distribution
+        generatePlatformBatch.call(this, 20, 12);
+      }
+
+      function update() {
+        if (gameOver) return;
+
+        // Update timer
+        const elapsedTime = (this.time.now - gameStartTime) / 1000;
+        timeLeft = Math.max(0, 60 - elapsedTime);
+        timerText.setText("Time: " + Math.ceil(timeLeft));
+
+        // Check if time is up
+        if (timeLeft <= 0 && !gameOver) {
+          this.physics.pause();
+          player.setTint(0xff0000);
+          player.anims.play("death");
+          gameOver = true;
+
+          // Wait for death animation to complete before showing game over screen
+          setTimeout(() => {
+            showGameOverScreen();
+          }, 1000); // 1 second delay to let animation play
+          return;
+        }
+
+        // Movement
+        if (cursors.left.isDown) {
+          player.setVelocityX(-300);
+          player.setFlipX(true);
+          player.anims.play("right", true);
+        } else if (cursors.right.isDown) {
+          player.setVelocityX(300);
+          player.setFlipX(false);
+          player.anims.play("right", true);
+        } else {
+          player.setVelocityX(0);
+          if (player.body.touching.down) {
+            player.anims.play("idle", true);
+          } else {
+            player.anims.play("jump", true);
+          }
+        }
+
+        if (cursors.up.isDown && player.body.touching.down) {
+          player.setVelocityY(-350);
+        }
+
+        // Track highest height
+        if (player.y < highestY) {
+          highestY = player.y;
+          // Calculate height from starting position, convert to positive value
+          const currentHeight = Math.floor((startingY - highestY) / 10);
+          heightText.setText("Height: " + currentHeight);
+        }
+
+        // Generate new platforms ahead
+        if (player.y < lastPlatformY + 500) {
+          generatePlatformBatch.call(this, 5, 3);
+        }
+
+        // Bomb patrol logic
+        bombs.children.entries.forEach((bomb) => {
+          if (bomb.active && bomb.platformX) {
+            var platformLeft = bomb.platformX - bomb.platformWidth / 2;
+            var platformRight = bomb.platformX + bomb.platformWidth / 2;
+
+            if (bomb.x <= platformLeft && bomb.body.velocity.x < 0) {
+              bomb.setVelocityX(Math.abs(bomb.body.velocity.x));
+            } else if (bomb.x >= platformRight && bomb.body.velocity.x > 0) {
+              bomb.setVelocityX(-Math.abs(bomb.body.velocity.x));
+            }
+          }
+        });
+
+        // MOVING PLATFORM CODE: Move moving platforms horizontally
+        movingPlatforms.children.iterate(function (platform) {
+          if (platform && platform.active && platform.isMoving) {
+            platform.x +=
+              platform.moveSpeed * platform.moveDirection * (1 / 60);
+            // Bounce at min/max bounds
+            if (platform.x < platform.minX) {
+              platform.x = platform.minX;
+              platform.moveDirection = 1;
+            } else if (platform.x > platform.maxX) {
+              platform.x = platform.maxX;
+              platform.moveDirection = -1;
+            }
+          }
+        });
+
+        // Keep stars aligned with moving platforms
+        stars.children.entries.forEach((star) => {
+          if (star.active && star.platform) {
+            star.x = star.platform.x + star.platformOriginalX;
+          }
+        });
+
+        // Keep bombs aligned with moving platforms
+        bombs.children.entries.forEach((bomb) => {
+          if (bomb.active && bomb.platform) {
+            bomb.x = bomb.platform.x + bomb.platformOriginalX;
+          }
+        });
+
+        // Destroy platforms + their stars/bombs below screen
+        platforms.children.entries.forEach((platform) => {
+          if (platform.active && platform.y > player.y + 1000) {
+            if (platform.hasStar && platform.hasStar.active) {
+              platform.hasStar.destroy();
+              platform.hasStar = null;
+            }
+            if (platform.hasBomb && platform.hasBomb.active) {
+              platform.hasBomb.destroy();
+              platform.hasBomb = null;
+            }
+            platform.destroy();
+          }
+        });
+
+        // MOVING PLATFORM CODE: destroy passed moving platforms
+        movingPlatforms.children.entries.forEach(function (platform) {
+          if (platform.active && platform.y > player.y + 1000) {
+            if (platform.hasStar && platform.hasStar.active) {
+              platform.hasStar.destroy();
+              platform.hasStar = null;
+            }
+            if (platform.hasBomb && platform.hasBomb.active) {
+              platform.hasBomb.destroy();
+              platform.hasBomb = null;
+            }
+            platform.destroy();
+          }
+        });
+
+        // Carry player along with moving platform if standing on one
+        if (player.body.touching.down) {
+          movingPlatforms.children.entries.forEach(function (platform) {
+            if (
+              platform.active &&
+              Phaser.Geom.Intersects.RectangleToRectangle(
+                player.getBounds(),
+                platform.getBounds()
+              )
+            ) {
+              // Move player horizontally by platform's horizontal velocity
+              player.x +=
+                platform.moveSpeed * platform.moveDirection * (1 / 60);
+            }
+          });
+        }
+      }
+
+      // Platform Generation Batch (handles both static and moving)
+      function generatePlatformBatch(count, starsCount) {
+        // Create array to determine which platforms get stars
+        const starIndices = [];
+
+        // Randomly select which platforms will have stars
+        while (starIndices.length < starsCount) {
+          const randomIndex = Phaser.Math.Between(0, count - 1);
+          if (!starIndices.includes(randomIndex)) {
+            starIndices.push(randomIndex);
+          }
+        }
+
+        // Generate platforms with predetermined star distribution
+        for (let i = 0; i < count; i++) {
+          const shouldHaveStar = starIndices.includes(i);
+          generatePlatform.call(this, shouldHaveStar);
+        }
+      }
+
+      function generatePlatform(forceStar = null) {
+        // Step the new Y upward relative to the last platform
+        const minVerticalGap = 140;
+        const maxVerticalGap = 200;
+        const platformY =
+          lastPlatformY - Phaser.Math.Between(minVerticalGap, maxVerticalGap);
+
+        // Calculate reachable X position with minimum distance requirement
+        const maxJumpDistance = 200;
+        const minHorizontalGap = 100;
+
+        // Create two possible ranges: left side and right side of last platform
+        const leftRangeMin = Math.max(100, lastPlatformX - maxJumpDistance);
+        const leftRangeMax = Math.max(100, lastPlatformX - minHorizontalGap);
+
+        const rightRangeMin = Math.min(
+          this.cameras.main.width - 100,
+          lastPlatformX + minHorizontalGap
+        );
+        const rightRangeMax = Math.min(
+          this.cameras.main.width - 100,
+          lastPlatformX + maxJumpDistance
+        );
+
+        let platformX;
+
+        // Check which ranges are valid
+        const leftRangeValid = leftRangeMin < leftRangeMax;
+        const rightRangeValid = rightRangeMin < rightRangeMax;
+
+        if (leftRangeValid && rightRangeValid) {
+          if (Phaser.Math.Between(0, 1) === 0) {
+            platformX = Phaser.Math.Between(leftRangeMin, leftRangeMax);
+          } else {
+            platformX = Phaser.Math.Between(rightRangeMin, rightRangeMax);
+          }
+        } else if (leftRangeValid) {
+          platformX = Phaser.Math.Between(leftRangeMin, leftRangeMax);
+        } else if (rightRangeValid) {
+          platformX = Phaser.Math.Between(rightRangeMin, rightRangeMax);
+        } else {
+          const minX = Math.max(100, lastPlatformX - maxJumpDistance);
+          const maxX = Math.min(
+            this.cameras.main.width - 100,
+            lastPlatformX + maxJumpDistance
+          );
+          platformX = Phaser.Math.Between(minX, maxX);
+        }
+
+        // Random width but ensure it's reasonable
+        const platformWidth = Phaser.Math.Between(220, 300);
+
+        // MOVING PLATFORM CODE: 30% chance to be moving
+        const isMoving = Phaser.Math.Between(0, 100) < 40;
+        let platform;
+
+        if (isMoving) {
+          platform = movingPlatforms.create(platformX, platformY, "ground");
+          platform.body.allowGravity = false;
+          platform.setImmovable(true);
+          platform.isMoving = true;
+          platform.moveDirection = Phaser.Math.Between(0, 1) === 0 ? 1 : -1;
+          platform.moveSpeed = Phaser.Math.Between(50, 120);
+          // Movement range, can be tweaked for variety
+          platform.minX = Math.max(100, platformX - 60);
+          platform.maxX = Math.min(
+            this.cameras.main.width - 100,
+            platformX + 60
+          );
+        } else {
+          platform = platforms.create(platformX, platformY, "ground");
+          platform.isMoving = false;
+        }
+
+        platform.displayWidth = platformWidth;
+
+        if (!platform.isMoving && platform.refreshBody) {
+          // Only static platforms have refreshBody method
+          platform.refreshBody();
+        }
+
+        // === NEW: Only spawn stars & bombs on static platforms ===
+        let star = null;
+        let bomb = null;
+
+        if (!isMoving) {
+          // Add stars
+          const hasStar =
+            forceStar !== null ? forceStar : Phaser.Math.Between(0, 100) < 100;
+          if (hasStar) {
+            const starX = Phaser.Math.Between(
+              platformX - platformWidth / 2 + 20,
+              platformX + platformWidth / 2 - 20
+            );
+            const starY = platformY - 25;
+            star = stars.create(starX, starY, "star");
+            platform.hasStar = star;
+          }
+
+          // If platform has a star, it MUST have a bomb
+          // If no star, 40% chance of having a bomb
+          const shouldHaveBomb = hasStar || Phaser.Math.Between(0, 100) < 40;
+
+          if (shouldHaveBomb) {
+            let bombX = Phaser.Math.Between(
+              platformX - platformWidth / 2 + 20,
+              platformX + platformWidth / 2 - 20
+            );
+            // Optional: Try to avoid overlap with star if both exist
+            if (hasStar && star) {
+              let tries = 0;
+              while (Math.abs(bombX - star.x) < 40 && tries < 10) {
+                bombX = Phaser.Math.Between(
+                  platformX - platformWidth / 2 + 20,
+                  platformX + platformWidth / 2 - 20
+                );
+                tries++;
+              }
+            }
+            const bombY = platformY - 25;
+            bomb = bombs.create(bombX, bombY, "bomb");
+            bomb.setCollideWorldBounds(true);
+            bomb.setBounce(1);
+            bomb.setVelocity(70, 20);
+            bomb.platformX = platformX;
+            bomb.platformWidth = platformWidth;
+            platform.hasBomb = bomb;
+          }
+        }
+
+        // Update tracker so next platform goes above this one
+        lastPlatformY = platformY;
+        lastPlatformX = platformX;
+      }
+
+      function collectStar(player, star) {
+        star.disableBody(true, true);
+        score += 100;
+        scoreText.setText("Score: " + score);
+      }
+
+      function hitBomb(player, bomb) {
+        this.physics.pause();
+        player.setTint(0xff0000);
+        player.anims.play("death");
+        gameOver = true;
+
+        // Wait for death animation to complete before showing game over screen
+        setTimeout(() => {
+          showGameOverScreen();
+        }, 1000); // 1 second delay to let animation play
+      }
+
+      // Show retro game over screen
+      function showGameOverScreen() {
+        const finalHeight = Math.abs(Math.floor(highestY / 10));
+        document.getElementById("finalScore").textContent = score;
+        document.getElementById("finalHeight").textContent = finalHeight;
+
+        const overlay = document.getElementById("gameOverOverlay");
+        // Add smooth transition by adding the 'show' class
+        setTimeout(() => {
+          overlay.classList.add("show");
+        }, 100); // Small delay to ensure smooth transition
+      }
+
+      // Restart the game
+      function restartGame() {
+        location.reload();
+      }
+
+      // Go to home page
+      function goHome() {
+        window.location.href = "home.html";
+      }
+
+      // Handle window resize
+      window.addEventListener("resize", function () {
+        if (game && game.scale && game.scale.resize) {
+          game.scale.resize(window.innerWidth, window.innerHeight);
+        }
+      });
+    </script>
+  </body>
+</html>
