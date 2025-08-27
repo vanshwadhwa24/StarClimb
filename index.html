@@ -143,9 +143,50 @@
           gap: 15px;
         }
       }
+      .mobile-controls {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 20px;
+        z-index: 2000;
+      }
+
+      .mobile-controls button {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 24px;
+        font-weight: bold;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: 2px solid #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+        outline: none;
+      }
+
+      .mobile-controls button:active {
+        background: rgba(255, 0, 0, 0.8);
+      }
+
+      @media (min-width: 769px) {
+        .mobile-controls {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
+    <!-- Mobile Controls -->
+    <div class="mobile-controls">
+      <button id="btn-left">◀</button>
+      <button id="btn-right">▶</button>
+      <button id="btn-up">▲</button>
+      <button id="btn-down">▼</button>
+    </div>
+
     <!-- Retro Game Over Overlay -->
     <div id="gameOverOverlay" class="game-over-overlay">
       <div class="game-over-content">
@@ -163,6 +204,46 @@
       </div>
     </div>
     <script type="text/javascript">
+      // Mobile input flags
+      let mobileInput = {
+        left: false,
+        right: false,
+        up: false,
+        down: false,
+      };
+
+      // Add event listeners for buttons
+      function setupMobileControls() {
+        document
+          .getElementById("btn-left")
+          .addEventListener("touchstart", () => (mobileInput.left = true));
+        document
+          .getElementById("btn-left")
+          .addEventListener("touchend", () => (mobileInput.left = false));
+
+        document
+          .getElementById("btn-right")
+          .addEventListener("touchstart", () => (mobileInput.right = true));
+        document
+          .getElementById("btn-right")
+          .addEventListener("touchend", () => (mobileInput.right = false));
+
+        document
+          .getElementById("btn-up")
+          .addEventListener("touchstart", () => (mobileInput.up = true));
+        document
+          .getElementById("btn-up")
+          .addEventListener("touchend", () => (mobileInput.up = false));
+
+        document
+          .getElementById("btn-down")
+          .addEventListener("touchstart", () => (mobileInput.down = true));
+        document
+          .getElementById("btn-down")
+          .addEventListener("touchend", () => (mobileInput.down = false));
+      }
+      setupMobileControls();
+
       var player;
       var stars;
       var bombs;
@@ -204,7 +285,7 @@
       function preload() {
         this.load.image("sky", "assets/bg2.png");
         this.load.image("ground", "assets/platform.png");
-        this.load.image("base" , "assets/platform2.png")
+        this.load.image("base", "assets/platform2.png");
         this.load.image("star", "assets/star.png");
         this.load.image("bomb", "assets/bomb.png");
         this.load.spritesheet("dude", "assets/PM_Run.png", {
@@ -395,14 +476,14 @@
         // Check if player has fallen too far below the lowest platform (game over condition)
         const fallThreshold = 800; // Distance below the lowest platform before game over
         let lowestPlatformY = startingY; // Start with the initial ground level
-        
+
         // Find the lowest platform currently in the game
         platforms.children.entries.forEach((platform) => {
           if (platform.active && platform.y > lowestPlatformY) {
             lowestPlatformY = platform.y;
           }
         });
-        
+
         movingPlatforms.children.entries.forEach((platform) => {
           if (platform.active && platform.y > lowestPlatformY) {
             lowestPlatformY = platform.y;
@@ -424,11 +505,11 @@
         }
 
         // Movement
-        if (cursors.left.isDown) {
+        if (cursors.left.isDown || mobileInput.left) {
           player.setVelocityX(-300);
           player.setFlipX(true);
           player.anims.play("right", true);
-        } else if (cursors.right.isDown) {
+        } else if (cursors.right.isDown || mobileInput.right) {
           player.setVelocityX(300);
           player.setFlipX(false);
           player.anims.play("right", true);
@@ -441,7 +522,10 @@
           }
         }
 
-        if (cursors.up.isDown && player.body.touching.down) {
+        if (
+          (cursors.up.isDown || mobileInput.up) &&
+          player.body.touching.down
+        ) {
           player.setVelocityY(-350);
         }
 
