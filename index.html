@@ -149,6 +149,7 @@
         left: 50%;
         transform: translateX(-50%);
         display: flex;
+        justify-content: space-around;
         gap: 20px;
         z-index: 2000;
       }
@@ -159,7 +160,7 @@
         border-radius: 50%;
         font-size: 24px;
         font-weight: bold;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.381);
         color: white;
         border: 2px solid #fff;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -171,20 +172,24 @@
         background: rgba(255, 0, 0, 0.8);
       }
 
-      @media (min-width: 769px) {
+      /* @media (min-width: 769px) {
         .mobile-controls {
           display: none;
         }
-      }
+      } */
     </style>
   </head>
   <body>
     <!-- Mobile Controls -->
     <div class="mobile-controls">
-      <button id="btn-left">◀</button>
-      <button id="btn-right">▶</button>
-      <button id="btn-up">▲</button>
-      <button id="btn-down">▼</button>
+      <div>
+        <button id="btn-left">◀</button>
+        <button id="btn-right">▶</button>
+      </div>
+      <div>
+        <button id="btn-up">▲</button>
+        <button id="btn-down">▼</button>
+      </div>
     </div>
 
     <!-- Retro Game Over Overlay -->
