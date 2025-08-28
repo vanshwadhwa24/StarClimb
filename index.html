@@ -619,35 +619,35 @@
 
         // Responsive UI text
         const fontSize = gameConfig.isMobile ? "20px" : "28px";
+        const textColor = "#000000"; // keep your desired color
 
         scoreText = this.add.text(16, 16, "Score: 0", {
-          fontSize: fontSize,
-          fill: "#000",
+          fontSize,
+          fill: textColor,
         });
         scoreText.setScrollFactor(0);
+        scoreText.setOrigin(0, 0);
+        scoreText.setPosition(16, 16);
 
         heightText = this.add.text(
           16,
           gameConfig.isMobile ? 40 : 50,
           "Height: 0",
-          {
-            fontSize: fontSize,
-            fill: "#000",
-          }
+          { fontSize, fill: textColor }
         );
         heightText.setScrollFactor(0);
+        heightText.setOrigin(0, 0);
+        heightText.setPosition(16, gameConfig.isMobile ? 40 : 50);
 
         timerText = this.add.text(
           this.cameras.main.width - 16,
           16,
           "Time: 60",
-          {
-            fontSize: fontSize,
-            fill: "#000",
-          }
+          { fontSize, fill: textColor }
         );
-        timerText.setOrigin(1, 0);
         timerText.setScrollFactor(0);
+        timerText.setOrigin(1, 0);
+        timerText.setPosition(this.cameras.main.width - 16, 16);
 
         // Initialize game start time
         gameStartTime = this.time.now;
@@ -703,6 +703,16 @@
             this.cameras.main.width,
             20000
           );
+
+          const fontSize = gameConfig.isMobile ? "20px" : "28px";
+
+          scoreText.setStyle({ fontSize });
+          heightText.setStyle({ fontSize });
+          timerText.setStyle({ fontSize });
+
+          scoreText.setPosition(16, 16);
+          heightText.setPosition(16, gameConfig.isMobile ? 40 : 50);
+          timerText.setPosition(this.cameras.main.width - 16, 16);
         };
 
         this.scale.on("resize", this.handleResize, this);
