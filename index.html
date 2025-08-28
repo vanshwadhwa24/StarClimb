@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
       rel="stylesheet"
     />
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
     <style type="text/css">
       html,
       body {
@@ -20,11 +20,14 @@
         overflow: hidden;
         width: 100%;
         height: 100%;
+        font-family: "Press Start 2P", monospace;
       }
+
       canvas {
         display: block;
         width: 100vw !important;
         height: 100vh !important;
+        touch-action: none;
       }
 
       /* Retro Game Over Overlay */
@@ -43,6 +46,8 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.5s ease-in-out;
+        padding: 20px;
+        box-sizing: border-box;
       }
 
       .game-over-overlay.show {
@@ -57,6 +62,7 @@
         animation: retro-glow 1s ease-in-out infinite alternate;
         transform: scale(0.8);
         transition: transform 0.5s ease-out;
+        max-width: 90vw;
       }
 
       .game-over-overlay.show .game-over-content {
@@ -64,13 +70,14 @@
       }
 
       .game-over-title {
-        font-size: 48px;
+        font-size: clamp(24px, 8vw, 48px);
         margin-bottom: 30px;
         text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000;
+        line-height: 1.2;
       }
 
       .game-over-stats {
-        font-size: 16px;
+        font-size: clamp(12px, 3vw, 16px);
         color: #ffffff;
         margin-bottom: 40px;
         line-height: 2;
@@ -81,12 +88,13 @@
         border: 3px solid #ffffff;
         color: #ffffff;
         font-family: "Press Start 2P", monospace;
-        font-size: 16px;
-        padding: 15px 30px;
+        font-size: clamp(10px, 2.5vw, 16px);
+        padding: clamp(10px, 3vw, 15px) clamp(20px, 5vw, 30px);
         cursor: pointer;
         transition: all 0.3s ease;
         text-transform: uppercase;
         box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        margin: 5px;
       }
 
       .retry-button:hover {
@@ -97,9 +105,10 @@
 
       .button-container {
         display: flex;
-        gap: 20px;
+        gap: clamp(10px, 3vw, 20px);
         justify-content: center;
         flex-wrap: wrap;
+        align-items: center;
       }
 
       .home-button {
@@ -107,12 +116,13 @@
         border: 3px solid #ffffff;
         color: #ffffff;
         font-family: "Press Start 2P", monospace;
-        font-size: 16px;
-        padding: 15px 30px;
+        font-size: clamp(10px, 2.5vw, 16px);
+        padding: clamp(10px, 3vw, 15px) clamp(20px, 5vw, 30px);
         cursor: pointer;
         transition: all 0.3s ease;
         text-transform: uppercase;
         box-shadow: 0 0 20px rgba(0, 102, 204, 0.5);
+        margin: 5px;
       }
 
       .home-button:hover {
@@ -130,69 +140,172 @@
         }
       }
 
-      @media (max-width: 768px) {
-        .game-over-title {
-          font-size: 24px;
-        }
-        .game-over-stats {
-          font-size: 12px;
-        }
-        .retry-button,
-        .home-button {
-          font-size: 12px;
-          padding: 12px 24px;
-        }
-
-        .button-container {
-          gap: 15px;
-        }
-      }
+      /* Mobile Controls - Responsive Design */
       .mobile-controls {
         position: fixed;
-        bottom: 20px;
+        bottom: clamp(10px, 3vh, 30px);
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        justify-content: space-around;
-        gap: 20px;
+        justify-content: space-between;
+        align-items: flex-end;
+        width: min(90vw, 400px);
         z-index: 2000;
+        gap: clamp(20px, 5vw, 40px);
+      }
+
+      .control-group {
+        display: flex;
+        gap: clamp(8px, 2vw, 15px);
+        align-items: center;
       }
 
       .mobile-controls button {
-        width: 60px;
-        height: 60px;
+        width: clamp(45px, 12vw, 70px);
+        height: clamp(45px, 12vw, 70px);
         border-radius: 50%;
-        font-size: 24px;
+        font-size: clamp(16px, 4vw, 28px);
         font-weight: bold;
-        background: rgba(0, 0, 0, 0.381);
+        background: rgba(0, 0, 0, 0.7);
         color: white;
         border: 2px solid #fff;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         cursor: pointer;
         outline: none;
+        transition: all 0.2s ease;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .mobile-controls button:active {
         background: rgba(255, 0, 0, 0.8);
+        transform: scale(0.95);
       }
 
-      /* @media (min-width: 769px) {
+      .mobile-controls button:hover {
+        background: rgba(50, 50, 50, 0.8);
+      }
+
+      /* Jump button special styling */
+      #btn-up {
+        background: rgba(0, 150, 0, 0.7);
+        width: clamp(50px, 14vw, 80px);
+        height: clamp(50px, 14vw, 80px);
+      }
+
+      #btn-up:active {
+        background: rgba(0, 255, 0, 0.8);
+      }
+
+      /* Desktop hide controls option */
+      @media (min-width: 1024px) and (pointer: fine) {
         .mobile-controls {
-          display: none;
+          opacity: 0.3;
+          transition: opacity 0.3s ease;
         }
-      } */
+
+        .mobile-controls:hover {
+          opacity: 1;
+        }
+      }
+
+      /* Extra small devices */
+      @media (max-width: 480px) {
+        .game-over-content {
+          padding: 10px;
+        }
+
+        .game-over-stats {
+          margin-bottom: 30px;
+        }
+
+        .button-container {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .retry-button,
+        .home-button {
+          min-width: 200px;
+        }
+      }
+
+      /* Landscape orientation adjustments */
+      @media (orientation: landscape) and (max-height: 600px) {
+        .game-over-title {
+          font-size: clamp(20px, 6vh, 36px);
+          margin-bottom: 15px;
+        }
+
+        .game-over-stats {
+          font-size: clamp(10px, 2.5vh, 14px);
+          margin-bottom: 20px;
+        }
+
+        .mobile-controls {
+          bottom: clamp(5px, 2vh, 15px);
+        }
+
+        .mobile-controls button {
+          width: clamp(40px, 8vh, 60px);
+          height: clamp(40px, 8vh, 60px);
+          font-size: clamp(14px, 3vh, 22px);
+        }
+
+        #btn-up {
+          width: clamp(45px, 10vh, 70px);
+          height: clamp(45px, 10vh, 70px);
+        }
+      }
+
+      /* Tablet adjustments */
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .mobile-controls {
+          width: min(70vw, 350px);
+        }
+
+        .game-over-title {
+          font-size: clamp(30px, 6vw, 42px);
+        }
+      }
+
+      /* Very wide screens */
+      @media (min-width: 1920px) {
+        .game-over-title {
+          font-size: 48px;
+        }
+
+        .game-over-stats {
+          font-size: 16px;
+        }
+
+        .retry-button,
+        .home-button {
+          font-size: 16px;
+          padding: 15px 30px;
+        }
+      }
+
+      .mobile-controls button {
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+/Edge */
+        user-select: none; /* Standard */
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        -webkit-touch-callout: none; /* Disable callout menu on iOS */
+      }
     </style>
   </head>
   <body>
     <!-- Mobile Controls -->
     <div class="mobile-controls">
-      <div>
+      <div class="control-group">
         <button id="btn-left">◀</button>
         <button id="btn-right">▶</button>
       </div>
-      <div>
+      <div class="control-group">
         <button id="btn-up">▲</button>
-        <button id="btn-down">▼</button>
       </div>
     </div>
 
@@ -212,7 +325,15 @@
         </div>
       </div>
     </div>
+
     <script type="text/javascript">
+      // Global variables for responsive game configuration
+      let gameConfig = {
+        isMobile: window.innerWidth < 768,
+        isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
+        isDesktop: window.innerWidth >= 1024,
+      };
+
       // Mobile input flags
       let mobileInput = {
         left: false,
@@ -221,38 +342,68 @@
         down: false,
       };
 
-      // Add event listeners for buttons
+      // Enhanced mobile controls with better touch handling
       function setupMobileControls() {
-        document
-          .getElementById("btn-left")
-          .addEventListener("touchstart", () => (mobileInput.left = true));
-        document
-          .getElementById("btn-left")
-          .addEventListener("touchend", () => (mobileInput.left = false));
+        const buttons = ["btn-left", "btn-right", "btn-up"];
 
-        document
-          .getElementById("btn-right")
-          .addEventListener("touchstart", () => (mobileInput.right = true));
-        document
-          .getElementById("btn-right")
-          .addEventListener("touchend", () => (mobileInput.right = false));
+        buttons.forEach((buttonId) => {
+          const button = document.getElementById(buttonId);
+          const inputKey = buttonId.split("-")[1];
 
-        document
-          .getElementById("btn-up")
-          .addEventListener("touchstart", () => (mobileInput.up = true));
-        document
-          .getElementById("btn-up")
-          .addEventListener("touchend", () => (mobileInput.up = false));
+          // Touch events
+          button.addEventListener(
+            "touchstart",
+            (e) => {
+              e.preventDefault();
+              mobileInput[inputKey] = true;
+              button.style.transform = "scale(0.95)";
+            },
+            { passive: false }
+          );
 
-        document
-          .getElementById("btn-down")
-          .addEventListener("touchstart", () => (mobileInput.down = true));
-        document
-          .getElementById("btn-down")
-          .addEventListener("touchend", () => (mobileInput.down = false));
+          button.addEventListener(
+            "touchend",
+            (e) => {
+              e.preventDefault();
+              mobileInput[inputKey] = false;
+              button.style.transform = "scale(1)";
+            },
+            { passive: false }
+          );
+
+          button.addEventListener(
+            "touchcancel",
+            (e) => {
+              e.preventDefault();
+              mobileInput[inputKey] = false;
+              button.style.transform = "scale(1)";
+            },
+            { passive: false }
+          );
+
+          // Mouse events for desktop testing
+          button.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            mobileInput[inputKey] = true;
+            button.style.transform = "scale(0.95)";
+          });
+
+          button.addEventListener("mouseup", (e) => {
+            e.preventDefault();
+            mobileInput[inputKey] = false;
+            button.style.transform = "scale(1)";
+          });
+
+          button.addEventListener("mouseleave", (e) => {
+            mobileInput[inputKey] = false;
+            button.style.transform = "scale(1)";
+          });
+        });
       }
+
       setupMobileControls();
 
+      // Prevent double-tap zoom
       let lastTouchEnd = 0;
       document.addEventListener(
         "touchend",
@@ -266,11 +417,20 @@
         false
       );
 
+      // Prevent scrolling on touch devices
+      document.addEventListener(
+        "touchmove",
+        function (e) {
+          e.preventDefault();
+        },
+        { passive: false }
+      );
+
       var player;
       var stars;
       var bombs;
       var platforms;
-      var movingPlatforms; // MOVING PLATFORM CODE
+      var movingPlatforms;
       var cursors;
       var score = 0;
       var gameOver = false;
@@ -284,25 +444,35 @@
       var lastPlatformY = 0;
       var lastPlatformX = 0;
 
-      var config = {
-        type: Phaser.AUTO,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        physics: {
-          default: "arcade",
-          arcade: {
-            gravity: { y: 300 },
-            debug: false,
-          },
-        },
-        scene: {
-          preload: preload,
-          create: create,
-          update: update,
-        },
-      };
+      // Responsive game configuration
+      function getResponsiveConfig() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
 
-      var game = new Phaser.Game(config);
+        return {
+          type: Phaser.AUTO,
+          width: width,
+          height: height,
+          physics: {
+            default: "arcade",
+            arcade: {
+              gravity: { y: gameConfig.isMobile ? 250 : 300 },
+              debug: false,
+            },
+          },
+          scene: {
+            preload: preload,
+            create: create,
+            update: update,
+          },
+          scale: {
+            mode: Phaser.Scale.RESIZE,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+          },
+        };
+      }
+
+      var game = new Phaser.Game(getResponsiveConfig());
 
       function preload() {
         this.load.image("sky", "assets/bg2.png");
@@ -329,6 +499,9 @@
       }
 
       function create() {
+        // Update game config based on current screen size
+        updateGameConfig();
+
         // Set world bounds for endless scrolling
         this.physics.world.setBounds(0, -10000, this.cameras.main.width, 20000);
 
@@ -343,9 +516,9 @@
 
         // Platforms
         platforms = this.physics.add.staticGroup();
-        movingPlatforms = this.physics.add.group(); // MOVING PLATFORM CODE
+        movingPlatforms = this.physics.add.group();
 
-        // Initial ground platform (static!)
+        // Initial ground platform (responsive width)
         var startPlatform = platforms.create(
           this.cameras.main.width / 2,
           this.cameras.main.height - 50,
@@ -356,14 +529,15 @@
         lastPlatformY = this.cameras.main.height - 50;
         lastPlatformX = this.cameras.main.width / 2;
 
-        // Player
+        // Player with responsive scaling
+        const playerScale = gameConfig.isMobile ? 1.2 : 1.5;
         player = this.physics.add.sprite(
           this.cameras.main.width / 2,
           this.cameras.main.height - 100,
           "dude"
         );
 
-        player.setScale(1.5);
+        player.setScale(playerScale);
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
 
@@ -371,12 +545,13 @@
         startingY = player.y;
         highestY = player.y;
 
-        // Camera follow
+        // Camera follow with responsive deadzone
         this.cameras.main.startFollow(player);
-        this.cameras.main.setDeadzone(
-          this.cameras.main.width * 0.3,
-          this.cameras.main.height * 0.3
-        );
+        const deadzoneWidth =
+          this.cameras.main.width * (gameConfig.isMobile ? 0.4 : 0.3);
+        const deadzoneHeight =
+          this.cameras.main.height * (gameConfig.isMobile ? 0.4 : 0.3);
+        this.cameras.main.setDeadzone(deadzoneWidth, deadzoneHeight);
 
         // Animations
         this.anims.create({
@@ -430,17 +605,24 @@
         stars = this.physics.add.group();
         bombs = this.physics.add.group();
 
-        // Score/height text
+        // Responsive UI text
+        const fontSize = gameConfig.isMobile ? "20px" : "28px";
+
         scoreText = this.add.text(16, 16, "Score: 0", {
-          fontSize: "28px",
+          fontSize: fontSize,
           fill: "#000",
         });
         scoreText.setScrollFactor(0);
 
-        heightText = this.add.text(16, 50, "Height: 0", {
-          fontSize: "28px",
-          fill: "#000",
-        });
+        heightText = this.add.text(
+          16,
+          gameConfig.isMobile ? 40 : 50,
+          "Height: 0",
+          {
+            fontSize: fontSize,
+            fill: "#000",
+          }
+        );
         heightText.setScrollFactor(0);
 
         timerText = this.add.text(
@@ -448,7 +630,7 @@
           16,
           "Time: 60",
           {
-            fontSize: "28px",
+            fontSize: fontSize,
             fill: "#000",
           }
         );
@@ -460,17 +642,65 @@
 
         // Colliders
         this.physics.add.collider(player, platforms);
-        this.physics.add.collider(player, movingPlatforms); // MOVING PLATFORM CODE
+        this.physics.add.collider(player, movingPlatforms);
         this.physics.add.collider(stars, platforms);
-        this.physics.add.collider(stars, movingPlatforms); // MOVING PLATFORM CODE
+        this.physics.add.collider(stars, movingPlatforms);
         this.physics.add.collider(bombs, platforms);
-        this.physics.add.collider(bombs, movingPlatforms); // MOVING PLATFORM CODE
+        this.physics.add.collider(bombs, movingPlatforms);
 
         this.physics.add.overlap(player, stars, collectStar, null, this);
         this.physics.add.collider(player, bombs, hitBomb, null, this);
 
-        // Generate initial platforms with guaranteed star distribution
-        generatePlatformBatch.call(this, 20, 12);
+        // Generate initial platforms with responsive count
+        const initialPlatforms = gameConfig.isMobile ? 15 : 20;
+        const initialStars = gameConfig.isMobile ? 8 : 12;
+        generatePlatformBatch.call(this, initialPlatforms, initialStars);
+
+        // Handle resize events
+        this.handleResize = function () {
+          updateGameConfig();
+
+          if (scoreText && heightText && timerText) {
+            const fontSize = gameConfig.isMobile ? "20px" : "28px";
+            scoreText.setStyle({ fontSize: fontSize });
+            heightText.setStyle({ fontSize: fontSize });
+            timerText.setStyle({ fontSize: fontSize });
+
+            timerText.setPosition(this.cameras.main.width - 16, 16);
+            heightText.setPosition(16, gameConfig.isMobile ? 40 : 50);
+          }
+
+          if (this.bg) {
+            this.bg.setDisplaySize(
+              this.cameras.main.width,
+              this.cameras.main.height
+            );
+          }
+
+          if (this.cameras.main) {
+            const deadzoneWidth =
+              this.cameras.main.width * (gameConfig.isMobile ? 0.4 : 0.3);
+            const deadzoneHeight =
+              this.cameras.main.height * (gameConfig.isMobile ? 0.4 : 0.3);
+            this.cameras.main.setDeadzone(deadzoneWidth, deadzoneHeight);
+          }
+
+          this.physics.world.setBounds(
+            0,
+            -10000,
+            this.cameras.main.width,
+            20000
+          );
+        };
+
+        this.scale.on("resize", this.handleResize, this);
+      }
+
+      function updateGameConfig() {
+        gameConfig.isMobile = window.innerWidth < 768;
+        gameConfig.isTablet =
+          window.innerWidth >= 768 && window.innerWidth < 1024;
+        gameConfig.isDesktop = window.innerWidth >= 1024;
       }
 
       function update() {
@@ -488,18 +718,16 @@
           player.anims.play("death");
           gameOver = true;
 
-          // Wait for death animation to complete before showing game over screen
           setTimeout(() => {
             showGameOverScreen();
-          }, 1000); // 1 second delay to let animation play
+          }, 1000);
           return;
         }
 
-        // Check if player has fallen too far below the lowest platform (game over condition)
-        const fallThreshold = 800; // Distance below the lowest platform before game over
-        let lowestPlatformY = startingY; // Start with the initial ground level
+        // Check if player has fallen too far below the lowest platform
+        const fallThreshold = gameConfig.isMobile ? 600 : 800;
+        let lowestPlatformY = startingY;
 
-        // Find the lowest platform currently in the game
         platforms.children.entries.forEach((platform) => {
           if (platform.active && platform.y > lowestPlatformY) {
             lowestPlatformY = platform.y;
@@ -512,27 +740,29 @@
           }
         });
 
-        // If player has fallen too far below the lowest platform, trigger game over
         if (player.y > lowestPlatformY + fallThreshold && !gameOver) {
           this.physics.pause();
           player.setTint(0xff0000);
           player.anims.play("death");
           gameOver = true;
 
-          // Wait for death animation to complete before showing game over screen
           setTimeout(() => {
             showGameOverScreen();
-          }, 1000); // 1 second delay to let animation play
+          }, 1000);
           return;
         }
 
+        // Responsive movement controls
+        const moveSpeed = gameConfig.isMobile ? 250 : 300;
+        const jumpSpeed = gameConfig.isMobile ? 320 : 350;
+
         // Movement
         if (cursors.left.isDown || mobileInput.left) {
-          player.setVelocityX(-300);
+          player.setVelocityX(-moveSpeed);
           player.setFlipX(true);
           player.anims.play("right", true);
         } else if (cursors.right.isDown || mobileInput.right) {
-          player.setVelocityX(300);
+          player.setVelocityX(moveSpeed);
           player.setFlipX(false);
           player.anims.play("right", true);
         } else {
@@ -548,20 +778,21 @@
           (cursors.up.isDown || mobileInput.up) &&
           player.body.touching.down
         ) {
-          player.setVelocityY(-350);
+          player.setVelocityY(-jumpSpeed);
         }
 
         // Track highest height
         if (player.y < highestY) {
           highestY = player.y;
-          // Calculate height from starting position, convert to positive value
           const currentHeight = Math.floor((startingY - highestY) / 10);
           heightText.setText("Height: " + currentHeight);
         }
 
         // Generate new platforms ahead
         if (player.y < lastPlatformY + 500) {
-          generatePlatformBatch.call(this, 5, 3);
+          const batchSize = gameConfig.isMobile ? 3 : 5;
+          const starCount = gameConfig.isMobile ? 2 : 3;
+          generatePlatformBatch.call(this, batchSize, starCount);
         }
 
         // Bomb patrol logic
@@ -578,12 +809,11 @@
           }
         });
 
-        // MOVING PLATFORM CODE: Move moving platforms horizontally
+        // Moving platform logic
         movingPlatforms.children.iterate(function (platform) {
           if (platform && platform.active && platform.isMoving) {
             platform.x +=
               platform.moveSpeed * platform.moveDirection * (1 / 60);
-            // Bounce at min/max bounds
             if (platform.x < platform.minX) {
               platform.x = platform.minX;
               platform.moveDirection = 1;
@@ -608,9 +838,10 @@
           }
         });
 
-        // Destroy platforms + their stars/bombs below screen
+        // Destroy platforms below screen
+        const destroyDistance = 1000;
         platforms.children.entries.forEach((platform) => {
-          if (platform.active && platform.y > player.y + 1000) {
+          if (platform.active && platform.y > player.y + destroyDistance) {
             if (platform.hasStar && platform.hasStar.active) {
               platform.hasStar.destroy();
               platform.hasStar = null;
@@ -623,9 +854,8 @@
           }
         });
 
-        // MOVING PLATFORM CODE: destroy passed moving platforms
         movingPlatforms.children.entries.forEach(function (platform) {
-          if (platform.active && platform.y > player.y + 1000) {
+          if (platform.active && platform.y > player.y + destroyDistance) {
             if (platform.hasStar && platform.hasStar.active) {
               platform.hasStar.destroy();
               platform.hasStar = null;
@@ -638,7 +868,7 @@
           }
         });
 
-        // Carry player along with moving platform if standing on one
+        // Carry player with moving platform
         if (player.body.touching.down) {
           movingPlatforms.children.entries.forEach(function (platform) {
             if (
@@ -648,7 +878,6 @@
                 platform.getBounds()
               )
             ) {
-              // Move player horizontally by platform's horizontal velocity
               player.x +=
                 platform.moveSpeed * platform.moveDirection * (1 / 60);
             }
@@ -656,12 +885,10 @@
         }
       }
 
-      // Platform Generation Batch (handles both static and moving)
+      // Responsive platform generation
       function generatePlatformBatch(count, starsCount) {
-        // Create array to determine which platforms get stars
         const starIndices = [];
 
-        // Randomly select which platforms will have stars
         while (starIndices.length < starsCount) {
           const randomIndex = Phaser.Math.Between(0, count - 1);
           if (!starIndices.includes(randomIndex)) {
@@ -669,7 +896,6 @@
           }
         }
 
-        // Generate platforms with predetermined star distribution
         for (let i = 0; i < count; i++) {
           const shouldHaveStar = starIndices.includes(i);
           generatePlatform.call(this, shouldHaveStar);
@@ -677,17 +903,15 @@
       }
 
       function generatePlatform(forceStar = null) {
-        // Step the new Y upward relative to the last platform
-        const minVerticalGap = 140;
-        const maxVerticalGap = 200;
+        // Responsive platform generation parameters
+        const minVerticalGap = gameConfig.isMobile ? 120 : 140;
+        const maxVerticalGap = gameConfig.isMobile ? 180 : 200;
         const platformY =
           lastPlatformY - Phaser.Math.Between(minVerticalGap, maxVerticalGap);
 
-        // Calculate reachable X position with minimum distance requirement
-        const maxJumpDistance = 200;
-        const minHorizontalGap = 100;
+        const maxJumpDistance = gameConfig.isMobile ? 180 : 200;
+        const minHorizontalGap = gameConfig.isMobile ? 80 : 100;
 
-        // Create two possible ranges: left side and right side of last platform
         const leftRangeMin = Math.max(100, lastPlatformX - maxJumpDistance);
         const leftRangeMax = Math.max(100, lastPlatformX - minHorizontalGap);
 
@@ -702,7 +926,6 @@
 
         let platformX;
 
-        // Check which ranges are valid
         const leftRangeValid = leftRangeMin < leftRangeMax;
         const rightRangeValid = rightRangeMin < rightRangeMax;
 
@@ -725,11 +948,14 @@
           platformX = Phaser.Math.Between(minX, maxX);
         }
 
-        // Random width but ensure it's reasonable
-        const platformWidth = Phaser.Math.Between(220, 300);
+        // Responsive platform width
+        const minWidth = gameConfig.isMobile ? 180 : 220;
+        const maxWidth = gameConfig.isMobile ? 250 : 300;
+        const platformWidth = Phaser.Math.Between(minWidth, maxWidth);
 
-        // MOVING PLATFORM CODE: 30% chance to be moving
-        const isMoving = Phaser.Math.Between(0, 100) < 40;
+        // Moving platform logic with responsive probability
+        const movingChance = gameConfig.isMobile ? 25 : 40; // Less moving platforms on mobile for easier gameplay
+        const isMoving = Phaser.Math.Between(0, 100) < movingChance;
         let platform;
 
         if (isMoving) {
@@ -738,12 +964,16 @@
           platform.setImmovable(true);
           platform.isMoving = true;
           platform.moveDirection = Phaser.Math.Between(0, 1) === 0 ? 1 : -1;
-          platform.moveSpeed = Phaser.Math.Between(50, 120);
-          // Movement range, can be tweaked for variety
-          platform.minX = Math.max(100, platformX - 60);
+          platform.moveSpeed = gameConfig.isMobile
+            ? Phaser.Math.Between(40, 80)
+            : Phaser.Math.Between(50, 120);
+
+          // Responsive movement range
+          const moveRange = gameConfig.isMobile ? 50 : 60;
+          platform.minX = Math.max(100, platformX - moveRange);
           platform.maxX = Math.min(
             this.cameras.main.width - 100,
-            platformX + 60
+            platformX + moveRange
           );
         } else {
           platform = platforms.create(platformX, platformY, "ground");
@@ -753,11 +983,10 @@
         platform.displayWidth = platformWidth;
 
         if (!platform.isMoving && platform.refreshBody) {
-          // Only static platforms have refreshBody method
           platform.refreshBody();
         }
 
-        // === NEW: Only spawn stars & bombs on static platforms ===
+        // Only spawn stars & bombs on static platforms
         let star = null;
         let bomb = null;
 
@@ -772,19 +1001,32 @@
             );
             const starY = platformY - 25;
             star = stars.create(starX, starY, "star");
+
+            // Disable gravity on star so it doesn't fall
+            star.setGravityY(0);
+            star.setImmovable(true);
+            star.body.allowGravity = false;
+
+            // Responsive star scaling
+            if (gameConfig.isMobile) {
+              star.setScale(1.2);
+            }
+
             platform.hasStar = star;
           }
 
-          // If platform has a star, it MUST have a bomb
-          // If no star, 40% chance of having a bomb
-          const shouldHaveBomb = hasStar || Phaser.Math.Between(0, 100) < 40;
+          // Responsive bomb probability - fewer bombs on mobile
+          const bombBaseChance = gameConfig.isMobile ? 30 : 40;
+          const shouldHaveBomb =
+            hasStar || Phaser.Math.Between(0, 100) < bombBaseChance;
 
           if (shouldHaveBomb) {
             let bombX = Phaser.Math.Between(
               platformX - platformWidth / 2 + 20,
               platformX + platformWidth / 2 - 20
             );
-            // Optional: Try to avoid overlap with star if both exist
+
+            // Try to avoid overlap with star if both exist
             if (hasStar && star) {
               let tries = 0;
               while (Math.abs(bombX - star.x) < 40 && tries < 10) {
@@ -795,18 +1037,27 @@
                 tries++;
               }
             }
+
             const bombY = platformY - 25;
             bomb = bombs.create(bombX, bombY, "bomb");
             bomb.setCollideWorldBounds(true);
             bomb.setBounce(1);
-            bomb.setVelocity(70, 20);
+
+            // Responsive bomb speed - slower on mobile
+            const bombSpeed = gameConfig.isMobile ? 50 : 70;
+            bomb.setVelocity(bombSpeed, 20);
             bomb.platformX = platformX;
             bomb.platformWidth = platformWidth;
             platform.hasBomb = bomb;
+
+            // Responsive bomb scaling
+            if (gameConfig.isMobile) {
+              bomb.setScale(0.8);
+            }
           }
         }
 
-        // Update tracker so next platform goes above this one
+        // Update tracker
         lastPlatformY = platformY;
         lastPlatformX = platformX;
       }
@@ -823,23 +1074,21 @@
         player.anims.play("death");
         gameOver = true;
 
-        // Wait for death animation to complete before showing game over screen
         setTimeout(() => {
           showGameOverScreen();
-        }, 1000); // 1 second delay to let animation play
+        }, 1000);
       }
 
-      // Show retro game over screen
+      // Show responsive game over screen
       function showGameOverScreen() {
         const finalHeight = Math.abs(Math.floor(highestY / 10));
         document.getElementById("finalScore").textContent = score;
         document.getElementById("finalHeight").textContent = finalHeight;
 
         const overlay = document.getElementById("gameOverOverlay");
-        // Add smooth transition by adding the 'show' class
         setTimeout(() => {
           overlay.classList.add("show");
-        }, 100); // Small delay to ensure smooth transition
+        }, 100);
       }
 
       // Restart the game
@@ -852,12 +1101,86 @@
         window.location.href = "home.html";
       }
 
-      // Handle window resize
-      window.addEventListener("resize", function () {
-        if (game && game.scale && game.scale.resize) {
-          game.scale.resize(window.innerWidth, window.innerHeight);
+      // Enhanced resize handler
+      function handleResize() {
+        updateGameConfig();
+
+        // Update UI text sizes
+        if (scoreText && heightText && timerText) {
+          const fontSize = gameConfig.isMobile ? "20px" : "28px";
+          scoreText.setStyle({ fontSize: fontSize });
+          heightText.setStyle({ fontSize: fontSize });
+          timerText.setStyle({ fontSize: fontSize });
+
+          // Reposition timer text
+          timerText.setPosition(this.cameras.main.width - 16, 16);
+
+          // Adjust height text position
+          heightText.setPosition(16, gameConfig.isMobile ? 40 : 50);
         }
+
+        // Update background size
+        if (this.bg) {
+          this.bg.setDisplaySize(
+            this.cameras.main.width,
+            this.cameras.main.height
+          );
+        }
+
+        // Update camera deadzone
+        if (this.cameras.main) {
+          const deadzoneWidth =
+            this.cameras.main.width * (gameConfig.isMobile ? 0.4 : 0.3);
+          const deadzoneHeight =
+            this.cameras.main.height * (gameConfig.isMobile ? 0.4 : 0.3);
+          this.cameras.main.setDeadzone(deadzoneWidth, deadzoneHeight);
+        }
+
+        // Update world bounds
+        this.physics.world.setBounds(0, -10000, this.cameras.main.width, 20000);
+      }
+
+      // Handle window resize with debouncing
+      let resizeTimeout;
+      window.addEventListener("resize", function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          if (game && game.scale && game.scale.resize) {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+          }
+        }, 100);
       });
+
+      // Prevent context menu on long press
+      window.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+      });
+
+      // Handle orientation changes
+      window.addEventListener("orientationchange", function () {
+        setTimeout(() => {
+          if (game && game.scale && game.scale.resize) {
+            updateGameConfig();
+            game.scale.resize(window.innerWidth, window.innerHeight);
+          }
+        }, 500);
+      });
+
+      // Performance optimization for mobile
+      if (gameConfig.isMobile) {
+        // Disable right-click context menu
+        document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+        // Prevent text selection
+        document.onselectstart = function () {
+          return false;
+        };
+
+        // Prevent drag
+        document.ondragstart = function () {
+          return false;
+        };
+      }
     </script>
   </body>
 </html>
