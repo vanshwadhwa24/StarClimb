@@ -13,8 +13,12 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
     <style type="text/css">
-      html,
-      body {
+      body,
+      html {
+        background-image: url("assets/bg2.png"); /* or your background image */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         margin: 0;
         padding: 0;
         overflow: hidden;
@@ -294,6 +298,14 @@
         user-select: none; /* Standard */
         -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
         -webkit-touch-callout: none; /* Disable callout menu on iOS */
+      }
+
+      @media (max-width: 480px) {
+        .mobile-controls button {
+          width: clamp(60px, 18vw, 90px);
+          height: clamp(60px, 18vw, 90px);
+          font-size: clamp(20px, 6vw, 36px);
+        }
       }
     </style>
   </head>
