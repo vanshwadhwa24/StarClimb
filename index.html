@@ -627,7 +627,7 @@
         });
         scoreText.setScrollFactor(0);
         scoreText.setOrigin(0, 0);
-        scoreText.setPosition(16, 16);
+        scoreText.setPosition(16, gameConfig.isMobile ? 30 : 16);
 
         heightText = this.add.text(
           16,
@@ -637,7 +637,7 @@
         );
         heightText.setScrollFactor(0);
         heightText.setOrigin(0, 0);
-        heightText.setPosition(16, gameConfig.isMobile ? 40 : 50);
+        heightText.setPosition(16, gameConfig.isMobile ? 60 : 50);
 
         timerText = this.add.text(
           this.cameras.main.width - 16,
@@ -647,7 +647,7 @@
         );
         timerText.setScrollFactor(0);
         timerText.setOrigin(1, 0);
-        timerText.setPosition(this.cameras.main.width - 16, 16);
+        timerText.setPosition(this.cameras.main.width - 16, gameConfig.isMobile ? 30 : 16);
 
         // Initialize game start time
         gameStartTime = this.time.now;
